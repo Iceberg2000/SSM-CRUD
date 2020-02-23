@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+          http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://www.springframework.org/schema/context
+          http://www.springframework.org/schema/context/spring-context.xsd
+          http://www.springframework.org/schema/aop
+          http://www.springframework.org/schema/aop/spring-aop.xsd
+          http://www.springframework.org/schema/tx
+          http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!--开启注解扫描 -->
+    <context:component-scan base-package="edu.haue">
+        <!--排除controller -->
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+
+
+
+    <!--===============================Spring整合MyBatis==================================== -->
+    <!--配置连接池 -->
+    <!--引入外部文件 -->
+    <context:property-placeholder location="classpath:jdbcConfig.properties"/>
+
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <property name="driverClass" value="${jdbc.driverClass}"></property>
+        <property name="jdbcUrl" value="${jdbc.jdbcUrl}"></property>
+        <property name="user" value="${jdbc.user}"></property>
+        <property name="password" value="${jdbc.password}"></property>
+    </bean>
+
+    <!--配置SqlSessionFactory -->
+    <bean id="factory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"></property>
+        <!--指定mybatis中全局配置文件的位置 -->
+        <property name="configLocation" value="classpath:SqlMapConfig.xml"></property>
+        <!--指定mybatis中映射文件的位置 -->
+        <property name="mapperLocations" value="classpath:mapper/*.xml"></property>
+
+    </bean>
+
+    <!--配置扫描器，将mybatis中mapper接口的代理类加入到ioc容器中 -->
+    <bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="edu.haue.dao"></property>
+    </bean>
+
+    <!--配置一个可以执行批量的SqlSession -->
+    <bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg name="sqlSessionFactory" ref="factory"/>
+        <constructor-arg name="executorType" value="BATCH"/>
+    </bean>
+
+
+    <!--=================================配置Spring框架的声明式事务管理======================== -->
+    <!--配置事务管理器 -->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <!--配置事务通知 -->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <tx:method name="find*" read-only="true"/>
+            <tx:method name="*"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!--配置AOP增强 -->
+    <aop:config>
+        <aop:advisor advice-ref="txAdvice" pointcut="execution(* edu.haue.service.*.*(..))"/>
+    </aop:config>
+
+
+</beans>

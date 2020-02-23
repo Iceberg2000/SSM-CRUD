@@ -1,0 +1,33 @@
+<!DOCTYPE generatorConfiguration PUBLIC
+        "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+
+    <context id="DB2Tables" targetRuntime="MyBatis3">
+
+        <commentGenerator>
+            <property name="suppressAllComments" value="true" />
+        </commentGenerator>
+
+        <!--配置数据库连接 -->
+        <jdbcConnection
+                driverClass="com.mysql.jdbc.Driver"
+                connectionURL="jdbc:mysql://localhost:3306/ssm_demo"
+                userId="root"
+                password="123"
+        />
+
+        <!--配置javaBean的生成位置 -->
+        <javaModelGenerator targetPackage="edu.haue.domain" targetProject=".\src\main\java"/>
+
+        <!--配置mapper.xml文件的生成位置 -->
+        <sqlMapGenerator targetPackage="mapper" targetProject=".\src\main\resources"/>
+
+        <!--指定dao接口的生成位置 -->
+        <javaClientGenerator type="XMLMAPPER" targetPackage="edu.haue.dao" targetProject=".\src\main\java"/>
+
+        <!--指定表 -->
+        <table tableName="tab_emp"  domainObjectName="Employee"/>
+        <table tableName="tab_dept" domainObjectName="Department"/>
+    </context>
+</generatorConfiguration>
